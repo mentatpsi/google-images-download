@@ -92,6 +92,8 @@ def _images_get_next_item(s):
 def _images_get_all_items(page):
     items = []
 
+    forbidden = get_forbidden()
+
     t0 = time.time()
     while True:
         item, end_content = _images_get_next_item(page)
