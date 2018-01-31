@@ -33,6 +33,12 @@ class LengthError(Exception):
 keywords = [' high resolution']
 
 
+def get_forbidden():
+    forbid_file = open("C:\\temp\\forbidden.txt")
+    forbid = forbid_file.readlines()
+    forbid_file.close()
+    return forbid
+
 # Downloading entire Web Document (Raw Page Content)
 def download_page(url):
     version = (3, 0)
@@ -98,7 +104,19 @@ def _images_get_all_items(page):
         if item == "no_links":
             break
         else:
-            items.append(item)  # Append all the links in the list named 'Links'
+            forbidden_array = [item.find(forbid) != -1 for forbid in forbidden]
+            forbidBit = 0
+            for forbid in forbidden_array:
+                if not forbid and forbidBit == 0:
+                    pass
+                elif forbid:
+                    forbidBid = 1
+                    break
+                elif forbidBit == 1:
+                    break
+                    
+            if forbidBit == 0:
+                items.append(item)  # Append all the links in the list named 'Links'
             time.sleep(0.1)  # Timer could be used to slow down the request for image downloads
             page = page[end_content:]
     return items
