@@ -25,6 +25,10 @@ if args.limit:
 else:
     limit = 100
 
+
+class LengthError(Exception):
+    pass
+
 # This list is used to further add suffix to your search term. Each element of the list will help you download 100 images. First element is blank which denotes that no suffix is added to the search keyword of the above list. You can edit the list by adding/deleting elements from it.So if the first element of the search_keyword is 'Australia' and the second element of keywords is 'high resolution', then it will search for 'Australia High Resolution'
 keywords = [' high resolution']
 
@@ -53,6 +57,7 @@ def download_page(url):
             req = urllib2.Request(url, headers=headers)
             try:
                 response = urllib2.urlopen(req)
+                #print response.read()
             except URLError: # Handling SSL certificate failed
                 context = ssl._create_unverified_context()
                 response = urlopen(req,context=context)
@@ -80,8 +85,16 @@ def _images_get_next_item(s):
 # Getting all links with the help of '_images_get_next_image'
 def _images_get_all_items(page):
     items = []
+
+    t0 = time.time()
     while True:
         item, end_content = _images_get_next_item(page)
+        t1 = time.time()
+        total_time = t1 - t0
+
+        if total_time > 30:
+            break
+        
         if item == "no_links":
             break
         else:
@@ -151,6 +164,8 @@ while i < len(search_keyword):
     k = 0
     while (k < limit):
         try:
+            if (len(items) == 0):
+                raise LengthError
             req = Request(items[k], headers={
                 "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
             response = urlopen(req, None, 15)
@@ -169,6 +184,12 @@ while i < len(search_keyword):
 
             print("completed ====> " + str(k + 1) + ". " + image_name)
 
+            k = k + 1
+
+
+        except LengthError: #If there is an error of length of items
+            errorCount += 1
+            print("Length Error" + str(k))
             k = k + 1
 
         except IOError:  # If there is any IOError
